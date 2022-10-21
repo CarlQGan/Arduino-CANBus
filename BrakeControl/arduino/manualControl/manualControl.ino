@@ -19,9 +19,11 @@ const int CAN_INT_PIN = 2;
 mcp2515_can CAN(SPI_CS_PIN); // Set CS pin
 #endif
 
+const float MIN_DIST = 0.0; // Minimun distance for actuator
 const float MAX_DIST = 3.0; // Maximum safe distance that the actuator can move (inches)
 const unsigned long COMMAND_ID = 0xFF0000; // Default command ID for CAN Actuator
 const unsigned long REPORT_ID = 0xFF0001; // Default report ID for CAN Actuator
+
 
 
 void setup() {
@@ -29,7 +31,7 @@ void setup() {
     SERIAL_PORT_MONITOR.begin(115200);
     while(!Serial){};
 
-    while (CAN_OK != CAN.begin(CAN_500KBPS)) { // init can bus : baudrate = 500k
+    while (CAN_OK != CAN.begin(CAN_250KBPS)) { // init can bus : baudrate = 500k
         SERIAL_PORT_MONITOR.println("CAN init fail, retry...");
         delay(10);
     }
@@ -49,11 +51,11 @@ void loop() {
   
     while (!Serial) {};
 
-//    Serial.println("Please input actuator distance in inches:");
+    Serial.println("Please input actuator distance in inches:");
 
     // Accept user input
-//    float inputDist = Serial.parseFloat();
-    float inputDist = 2.0;
+    float inputDist = Serial.parseFloat();
+//    float inputDist = 0.5;
 
     // Clipping input range
     if (inputDist < 0.0) {
@@ -81,6 +83,20 @@ void loop() {
     CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
     delay(20);
 
+
+//    for (int i = 0; i < 3; i++) {
+//        // Clutch on, Motor on and hold
+//        bite3 = bite3Parser(1, 1, dpos_hi);
+//        overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
+//        
+//        Serial.print("Send data from hex ID: ");
+//        Serial.println(COMMAND_ID, HEX);
+//        printArray(data);
+//        
+//        CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
+//        delay(3000);
+//    }
+
     // Clutch on, Motor on and hold
     bite3 = bite3Parser(1, 1, dpos_hi);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
@@ -90,13 +106,27 @@ void loop() {
     printArray(data);
     
     CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
-    delay(2000);
+    delay(3000);
+
 
     // Clutch on, Motor off
     bite3 = bite3Parser(1, 0, dpos_hi);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
     CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
     delay(20);
+
+    for (int i = 0; i < 3; i++) {
+        // Clutch on, Motor on and hold
+        bite3 = bite3Parser(1, 1, dpos_hi);
+        overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
+        
+        Serial.print("Send data from hex ID: ");
+        Serial.println(COMMAND_ID, HEX);
+        printArray(data);
+        
+        CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
+        delay(3000);
+    }
 
     // Clutch off, Motor off
     bite3 = bite3Parser(0, 0, dpos_hi);
