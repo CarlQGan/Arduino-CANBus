@@ -1,6 +1,4 @@
 // demo: CAN-BUS Shield, send data
-
-
 #include <SPI.h>
 
 #define CAN_2515
@@ -41,7 +39,7 @@ void setup() {
 
     while (CAN_OK != CAN.begin(CAN_500KBPS)) {             // init can bus : baudrate = 500k
         SERIAL_PORT_MONITOR.println("CAN init fail, retry...");
-        delay(1000);
+        delay(100);
     }
     SERIAL_PORT_MONITOR.println("CAN init ok!");
 }

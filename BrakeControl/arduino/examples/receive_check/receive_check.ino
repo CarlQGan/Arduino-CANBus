@@ -1,5 +1,6 @@
 // demo: CAN-BUS Shield, receive data with check mode
 // send data coming to fast, such as less than 10ms, you can use this way
+// loovee, 2014-6-13
 #include <SPI.h>
 
 #define CAN_2515
@@ -38,8 +39,8 @@ void setup() {
     SERIAL_PORT_MONITOR.begin(115200);
 
     while (CAN_OK != CAN.begin(CAN_500KBPS)) {             // init can bus : baudrate = 500k
-        SERIAL_PORT_MONITOR.println("Receiver CAN init fail, retry...");
-        delay(1000);
+        SERIAL_PORT_MONITOR.println("CAN init fail, retry...");
+        delay(100);
     }
     SERIAL_PORT_MONITOR.println("CAN init ok!");
 }
