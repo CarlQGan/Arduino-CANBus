@@ -20,8 +20,8 @@ mcp2515_can CAN(SPI_CS_PIN); // Set CS pin
 #endif
 
 const float MAX_DIST = 3.0; // Maximum safe distance that the actuator can move (inches)
-const int COMMAND_ID = 0xff0000; // Default command ID for CAN Actuator
-const int REPORT_ID = 0xff0001; // Default report ID for CAN Actuator
+const unsigned long COMMAND_ID = 0xFF0000; // Default command ID for CAN Actuator
+const unsigned long REPORT_ID = 0xFF0001; // Default report ID for CAN Actuator
 
 
 void setup() {
@@ -77,27 +77,31 @@ void loop() {
 
     // Clutch on, Motor off
     bite3 = bite3Parser(1, 0, dpos_hi);
-    Serial.println(bite3);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
-    CAN.sendMsgBuf(COMMAND_ID, 0, 8, data);
+    CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
     delay(20);
 
-    // Clutch on, move motor and hold
+    // Clutch on, Motor on and hold
     bite3 = bite3Parser(1, 1, dpos_hi);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
-    CAN.sendMsgBuf(COMMAND_ID, 0, 8, data);
-    delay(1000);
+    
+    Serial.print("Send data from hex ID: ");
+    Serial.println(COMMAND_ID, HEX);
+    printArray(data);
+    
+    CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
+    delay(2000);
 
     // Clutch on, Motor off
     bite3 = bite3Parser(1, 0, dpos_hi);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
-    CAN.sendMsgBuf(COMMAND_ID, 0, 8, data);
+    CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
     delay(20);
 
     // Clutch off, Motor off
     bite3 = bite3Parser(0, 0, dpos_hi);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
-    CAN.sendMsgBuf(COMMAND_ID, 0, 8, data);
+    CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
     delay(20);
 }
 
@@ -114,19 +118,32 @@ void overwriteBuf(volatile byte* buf, int b0, int b1, int b2, int b3, int b4, in
 
 void printArray(volatile byte* buf) {
     unsigned char size_of_myArray = 8;
-    for (int i = 0; i < size_of_myArray; i++) {
-        Serial.print(buf[i]);
-        Serial.print('  ');
+  
+    for (int i = 0; i < size_of_myArray; i++) { // print the data
+        Serial.print(buf[i], HEX);
+        Serial.print("\t");
     }
+    
     Serial.println();
+    Serial.println("-----------------------------");
 }
 
+
+/*  
+ *   inputs a hex string (without prefix 0x) 
+ *   and return the int value
+ */
 int strHexToInt(char str[]) {
-  // inputs a hex string (without prefix 0x) 
-  // and return the int value
-  return (int) strtol(str, 0, 16);
+    // inputs a hex string (without prefix 0x) 
+    // and return the int value
+    return (int) strtol(str, 0, 16);
 }
 
+
+/*  
+ *   Format Byte 3 as String given clutch, motor flags
+ *   and significant byte of position
+ */
 String bite3Parser(int ce, int m, String dpos_hi) {
     return String((int) (ce * pow(2, 7) + m * pow(2, 6) + strHexToInt(dpos_hi.c_str())), HEX);
 }

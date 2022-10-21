@@ -4,7 +4,7 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "~/Library/Arduino15/**"
+                "~/Documents/Arduino/libraries/**"
             ],
             "defines": [],
             "macFrameworkPath": [],

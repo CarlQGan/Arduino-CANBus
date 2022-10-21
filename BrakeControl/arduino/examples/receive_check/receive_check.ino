@@ -56,7 +56,7 @@ void loop() {
         unsigned long canId = CAN.getCanId();
 
         SERIAL_PORT_MONITOR.println("-----------------------------");
-        SERIAL_PORT_MONITOR.print("Get data from ID: 0x");
+        SERIAL_PORT_MONITOR.print("Get data from ID: ");
         SERIAL_PORT_MONITOR.println(canId, HEX);
 
         for (int i = 0; i < len; i++) { // print the data
