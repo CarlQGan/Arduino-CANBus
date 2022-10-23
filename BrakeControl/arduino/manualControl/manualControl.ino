@@ -78,27 +78,14 @@ void loop() {
     dpos_hi = hexDist.substring(0, hexDistLen - 2);
 
     // Clutch on, Motor off
-    bite3 = bite3Parser(1, 0, dpos_hi);
+    bite3 = posCmdBite3Parser(1, 0, dpos_hi);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
     CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
     delay(20);
 
 
-//    for (int i = 0; i < 3; i++) {
-//        // Clutch on, Motor on and hold
-//        bite3 = bite3Parser(1, 1, dpos_hi);
-//        overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
-//        
-//        Serial.print("Send data from hex ID: ");
-//        Serial.println(COMMAND_ID, HEX);
-//        printArray(data);
-//        
-//        CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
-//        delay(3000);
-//    }
-
     // Clutch on, Motor on and hold
-    bite3 = bite3Parser(1, 1, dpos_hi);
+    bite3 = posCmdBite3Parser(1, 1, dpos_hi);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
     
     Serial.print("Send data from hex ID: ");
@@ -110,14 +97,14 @@ void loop() {
 
 
     // Clutch on, Motor off
-    bite3 = bite3Parser(1, 0, dpos_hi);
+    bite3 = posCmdBite3Parser(1, 0, dpos_hi);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
     CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
     delay(20);
 
     for (int i = 0; i < 3; i++) {
         // Clutch on, Motor on and hold
-        bite3 = bite3Parser(1, 1, dpos_hi);
+        bite3 = posCmdBite3Parser(1, 1, dpos_hi);
         overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
         
         Serial.print("Send data from hex ID: ");
@@ -129,7 +116,7 @@ void loop() {
     }
 
     // Clutch off, Motor off
-    bite3 = bite3Parser(0, 0, dpos_hi);
+    bite3 = posCmdBite3Parser(0, 0, dpos_hi);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
     CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
     delay(20);
@@ -174,6 +161,6 @@ int strHexToInt(char str[]) {
  *   Format Byte 3 as String given clutch, motor flags
  *   and significant byte of position
  */
-String bite3Parser(int ce, int m, String dpos_hi) {
+String posCmdBite3Parser(int ce, int m, String dpos_hi) {
     return String((int) (ce * pow(2, 7) + m * pow(2, 6) + strHexToInt(dpos_hi.c_str())), HEX);
 }

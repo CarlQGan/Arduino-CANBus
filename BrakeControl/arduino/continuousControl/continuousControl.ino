@@ -54,9 +54,7 @@ void setup() {
 }
 
 void loop() {
-    unsigned char buf[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     unsigned char data[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    unsigned char len = 0;
     String bite2;
     String bite3;
     String dpos_lo;
@@ -92,7 +90,7 @@ void loop() {
 
 
     // Clutch on, Motor on and hold
-    bite3 = bite3Parser(1, 1, dpos_hi);
+    bite3 = posCmdBite3Parser(1, 1, dpos_hi);
     overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
     
     Serial.print("Send data from hex ID: ");
@@ -143,6 +141,6 @@ int strHexToInt(char str[]) {
  *   Format Byte 3 as String given clutch, motor flags
  *   and significant byte of position
  */
-String bite3Parser(int ce, int m, String dpos_hi) {
+String posCmdBite3Parser(int ce, int m, String dpos_hi) {
     return String((int) (ce * pow(2, 7) + m * pow(2, 6) + strHexToInt(dpos_hi.c_str())), HEX);
 }
