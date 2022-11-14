@@ -25,79 +25,33 @@ const unsigned long COMMAND_ID = 0xFF0000; // Default command ID for CAN Actuato
 const unsigned long REPORT_ID = 0xFF0001; // Default report ID for CAN Actuator
 const char CLUTCH_MOTOR_OFF[8] = {0x0F, 0x4A, 0xC4, 0x09, 0, 0, 0, 0};
 const char CLUTCH_ON[8] = {0x0F, 0x4A, 0xC4, 0x89, 0, 0, 0, 0};
-const char POS_RESET[8] = {0x0F, 0x4A, 0xC0, 0x00, 0, 0, 0, 0};
+const char POS_ZERO[8] = {0x0F, 0x4A, 0xC0, 0x00, 0, 0, 0, 0};
 
 
 
 void setup() {
-    
+//    while (!Serial){
+//        Serial.begin(115200);
+//    };
+
     Serial.begin(115200);
-    while(!Serial){};
+    
+    actuatorInit();
 
-    while (CAN_OK != CAN.begin(CAN_250KBPS)) { // init can bus : baudrate = 500k
-        Serial.println("CAN init fail, retry...");
-        delay(10);
-    }
-    Serial.println("CAN init ok!");
-
-    // Reset Actuator
-    CAN.sendMsgBuf(COMMAND_ID, 1, 8, CLUTCH_MOTOR_OFF);
-    delay(20);
-
-    // Enable clutch for loop input
-    CAN.sendMsgBuf(COMMAND_ID, 1, 8, CLUTCH_ON);
-    delay(20);
-
-    // Reset actuator position
-    CAN.sendMsgBuf(COMMAND_ID, 1, 8, POS_RESET);
-    delay(2000);
 }
 
 void loop() {
-    unsigned char data[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    String bite2;
-    String bite3;
-    String dpos_lo;
-    String dpos_hi;
-  
-    while (!Serial) {};
-
-    Serial.println("Please input actuator distance in inches:");
-
-    // Accept user input
-//    float inputDist = Serial.parseFloat();
-    float inputDist = 0.0;
-
-    // Clipping input range
-    if (inputDist < 0.0) {
-        inputDist = 0.0;
-    }
-    if (inputDist > MAX_DIST) {
-        inputDist = MAX_DIST;
-    }
-
-    // Convert input to hex
-    int intDist = inputDist * 1000 + 500; // in 0.001” steps
-    String hexDist = String(intDist, HEX);
-    int hexDistLen = hexDist.length();
-    Serial.println("The distance in hex is: " + hexDist);
-
-    // the least significant byte of position
-    dpos_lo = hexDist.substring(hexDistLen - 2);
-    bite2 = dpos_lo;
-    // The most significant byte of position
-    dpos_hi = hexDist.substring(0, hexDistLen - 2);
-
-
-    // Clutch on, Motor on and hold
-    bite3 = posCmdBite3Parser(1, 1, dpos_hi);
-    overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
     
-    Serial.print("Send data from hex ID: ");
-    Serial.println(COMMAND_ID, HEX);
-    printArray(data);
-    
-    CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
+    // TODO: Accept User input
+    setActuatorPosition(1.0);
+    delay(1000);
+    setActuatorPosition(2.5);
+    delay(1000);
+    setActuatorPosition(1.5);
+    delay(1000);
+    setActuatorPosition(2.0);
+    delay(1000);
+    setActuatorPosition(0.0);
     delay(3000);
 
 }
@@ -143,4 +97,70 @@ int strHexToInt(char str[]) {
  */
 String posCmdBite3Parser(int ce, int m, String dpos_hi) {
     return String((int) (ce * pow(2, 7) + m * pow(2, 6) + strHexToInt(dpos_hi.c_str())), HEX);
+}
+
+/*  
+ *   Initialize the Actuator
+ */
+void actuatorInit() {
+    while (CAN_OK != CAN.begin(CAN_250KBPS)) { // init can bus : baudrate = 500k
+        Serial.println("CAN init fail, retry...");
+        delay(10);
+    }
+    Serial.println("CAN init ok!");
+
+//    // Disable everything
+//    CAN.sendMsgBuf(COMMAND_ID, 1, 8, CLUTCH_MOTOR_OFF);
+//    delay(20);
+
+    // Enable clutch for loop input
+    CAN.sendMsgBuf(COMMAND_ID, 1, 8, CLUTCH_ON);
+    delay(20);
+
+    setActuatorPosition(0.0);
+    delay(3000);
+}
+
+/*  
+ *   Move the Actuator to designated position in inches.
+ *   The Actuator will execute whatever 
+ *   the latest command is immediately.
+ */
+void setActuatorPosition(float inputDist) {
+    unsigned char data[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    String bite2;
+    String bite3;
+    String dpos_lo;
+    String dpos_hi;
+    
+    // Clipping input range
+    if (inputDist < 0.0) {
+        inputDist = 0.0;
+    }
+    if (inputDist > MAX_DIST) {
+        inputDist = MAX_DIST;
+    }
+    Serial.println("The distance in inches is: " + String(inputDist));
+
+    // Convert input to hex
+    int intDist = inputDist * 1000 + 500; // in 0.001” steps
+    String hexDist = String(intDist, HEX);
+    int hexDistLen = hexDist.length();
+    Serial.println("The distance in hex is: " + hexDist);
+
+    // the least significant byte of position
+    dpos_lo = hexDist.substring(hexDistLen - 2);
+    bite2 = dpos_lo;
+    // The most significant byte of position
+    dpos_hi = hexDist.substring(0, hexDistLen - 2);
+
+    // Clutch on, Motor on and move to the desired position
+    bite3 = posCmdBite3Parser(1, 1, dpos_hi);
+    overwriteBuf(data, 0x0F, 0x4A, strHexToInt(bite2.c_str()), strHexToInt(bite3.c_str()), 0, 0, 0, 0);
+    
+    Serial.print("Sending data from hex ID: ");
+    Serial.println(COMMAND_ID, HEX);
+    printArray(data);
+    
+    CAN.sendMsgBuf(COMMAND_ID, 1, 8, data);
 }

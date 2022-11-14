@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
+#include <string.h>
 
 #define CAN_2515
 

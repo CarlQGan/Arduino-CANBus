@@ -10,9 +10,9 @@ const float MIN_DIST = 0.0; // Minimun distance for actuator
 const float MAX_DIST = 3.0; // Maximum safe distance that the actuator can move (inches)
 const unsigned long COMMAND_ID = 0xFF0000; // Default command ID for CAN Actuator
 const unsigned long REPORT_ID = 0xFF0001; // Default report ID for CAN Actuator
-const unsigned char CLUTCH_MOTOR_OFF[8] = {0x0F, 0x4A, 0xC4, 0x09, 0, 0, 0, 0};
-const unsigned char CLUTCH_ON[8] = {0x0F, 0x4A, 0xC4, 0x89, 0, 0, 0, 0};
-const unsigned char POS_RESET[8] = {0x0F, 0x4A, 0xC0, 0x00, 0, 0, 0, 0};
+const byte CLUTCH_MOTOR_OFF[8] = {0x0F, 0x4A, 0xC4, 0x09, 0, 0, 0, 0};
+const byte CLUTCH_ON[8] = {0x0F, 0x4A, 0xC4, 0x89, 0, 0, 0, 0};
+const byte POS_RESET[8] = {0x0F, 0x4A, 0xC0, 0x00, 0, 0, 0, 0};
 
 
 
